@@ -44,17 +44,7 @@ export default function DashboardPage() {
  
 
   const toggleFullScreen = () => {
-    if (!document.fullscreenElement) {
-      if (mapContainerRef.current?.requestFullscreen) {
-        mapContainerRef.current.requestFullscreen().catch((err) => {
-          console.error(`Error attempting to enable full-screen mode: ${err.message}`)
-        })
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen()
-      }
-    }
+    setIsFullScreen(!isFullScreen);
   }
 
 
@@ -108,7 +98,11 @@ export default function DashboardPage() {
         <div className="relative">
           <Card
             ref={mapContainerRef}
-            className={`w-full ${isFullScreen ? "h-screen" : "h-[400px]"} relative overflow-hidden`}
+            className={`w-full ${
+              isFullScreen 
+                ? "fixed inset-0 z-50 h-screen" 
+                : "h-[400px]"
+            } relative overflow-hidden`}
           >
             <div className="absolute inset-0">
               <KakaoMap 

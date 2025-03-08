@@ -46,6 +46,8 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
               strokeColor: "#39f",
               fillColor: "#cce6ff",
               fillOpacity: 0.7,
+              strokeWeight: 3,
+              strokeOpacity: 0.8,
             },
           }
 
@@ -213,9 +215,9 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
         setMarkers([]);
         setInfoWindows([]);
 
-        // 격자점 간격 설정 (약 100m)
-        const lat_interval = (maxLat - minLat) / 10;
-        const lng_interval = (maxLng - minLng) / 10;
+        // 격자점 간격 설정을 더 조밀하게 수정
+        const lat_interval = (maxLat - minLat) / 20; // 10에서 20으로 변경
+        const lng_interval = (maxLng - minLng) / 20; // 10에서 20으로 변경
         
         // 폴리곤 경로 생성
         const polygonPath = path.map(p => new window.kakao.maps.LatLng(p.y, p.x));
