@@ -5,19 +5,20 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { toast } from "@/app/hooks/use-toast" 
-import Cookies from "js-cookie"
+
 
 export default function LoginPage() {
   const [pin, setPin] = useState("")
   const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (pin === "1234") {  // 실제 구현에서는 서버에서 검증해야 합니다
-      Cookies.set("auth", "true", { expires: 1 }) // 1일 후 만료
+    if (pin === "7327") {
+      sessionStorage.setItem('isLoggedIn', 'true')
       router.push("/dashboard")
     } else {
+      alert("비밀번호가 일치하지 않습니다.")
       toast({
         title: "로그인 실패",
         description: "올바른 PIN 번호를 입력해주세요.",
@@ -31,7 +32,8 @@ export default function LoginPage() {
       <div className="mx-auto max-w-sm space-y-6 p-4">
         <div className="space-y-2 text-center">
           <h1 className="text-3xl font-bold">PIN 로그인</h1>
-          <p className="text-gray-500 ">PIN 번호를 입력하여 로그인하세요</p>
+          <p className="text-gray-500">PIN 번호를 입력하여 로그인하세요</p>
+          <p className="text-sm text-red-500 mt-2">※ 본 서비스는 PC에서만 이용 가능합니다</p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input

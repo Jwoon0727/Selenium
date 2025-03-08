@@ -1,17 +1,25 @@
-import { NextResponse } from "next/server"
-import type { NextRequest } from "next/server"
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const isAuthenticated = request.cookies.has("auth")
-  const isDashboardPage = request.nextUrl.pathname === "/dashboard"
-
-  if (isDashboardPage && !isAuthenticated) {
-    return NextResponse.redirect(new URL("/", request.url))
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    // 클라이언트 사이드에서 로그인 상태 확인
+    return new NextResponse(
+      `
+      <script>
+        if (!sessionStorage.getItem('isLoggedIn')) {
+          window.location.href = '/'
+        }
+      </script>
+      `,
+      {
+        headers: { 'Content-Type': 'text/html' },
+      }
+    )
   }
-
   return NextResponse.next()
 }
 
 export const config = {
-  matcher: "/dashboard",
-} 
+  matcher: ['/dashboard', '/dashboard/:path*']
+}

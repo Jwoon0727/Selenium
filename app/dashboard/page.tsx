@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Maximize2, Minimize2 } from "lucide-react"
+import { Maximize2, Minimize2, RefreshCw } from "lucide-react"
 
 import {
   Dialog,
@@ -20,8 +20,6 @@ import { toast } from "@/app/hooks/use-toast"
 import AddressTable from '@/components/AddressTable';
 import KakaoMap from '@/components/KakaoMap'
 
-
-
 interface Address {
   id: number;
   name: string;
@@ -29,6 +27,14 @@ interface Address {
   phone: string;
   category: string;
   rating: string;
+}
+
+interface WebkitElement extends HTMLDivElement {
+  webkitRequestFullscreen: () => Promise<void>;
+}
+
+interface WebkitDocument extends Document {
+  webkitExitFullscreen: () => Promise<void>;
 }
 
 export default function DashboardPage() {
@@ -41,16 +47,25 @@ export default function DashboardPage() {
   const shareInputRef = useRef<HTMLInputElement>(null)
   const [addresses, setAddresses] = useState<Address[]>([])
 
- 
-
   const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-  }
-
-
-
-
-
+    if (!document.fullscreenElement) {
+      if (mapContainerRef.current?.requestFullscreen) {
+        mapContainerRef.current.requestFullscreen();
+      } else if ((mapContainerRef.current as WebkitElement)?.webkitRequestFullscreen) {
+        (mapContainerRef.current as WebkitElement).webkitRequestFullscreen();
+      } else {
+        setIsFullScreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if ((document as WebkitDocument).webkitExitFullscreen) {
+        (document as WebkitDocument).webkitExitFullscreen();
+      } else {
+        setIsFullScreen(false);
+      }
+    }
+  };
 
   const copyShareUrl = () => {
     if (shareInputRef.current) {
@@ -74,18 +89,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const handleFullScreenChange = () => {
-      setIsFullScreen(!!document.fullscreenElement)
-    }
+      setIsFullScreen(!!document.fullscreenElement);
+    };
 
-    document.addEventListener("fullscreenchange", handleFullScreenChange)
+    document.addEventListener("fullscreenchange", handleFullScreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullScreenChange);
 
     // 저장된 데이터 불러오기
 
 
     return () => {
-      document.removeEventListener("fullscreenchange", handleFullScreenChange)
-    }
-  }, [])
+      document.removeEventListener("fullscreenchange", handleFullScreenChange);
+      document.removeEventListener("webkitfullscreenchange", handleFullScreenChange);
+    };
+  }, []);
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -111,16 +128,30 @@ export default function DashboardPage() {
               />
             </div>
         
-            {/* Full Screen Toggle Button */}
-            <Button
-              variant="outline"
-              size="icon"
-              className="absolute top-2 right-2 z-10 bg-white/80 hover:bg-white"
-              onClick={toggleFullScreen}
-              aria-label={isFullScreen ? "전체화면 종료" : "전체화면으로 보기"}
-            >
-              {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-            </Button>
+            {/* 버튼 그룹 */}
+            <div className="absolute top-2 right-2 z-10 flex gap-2">
+              {/* 새로고침 버튼 */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-white/80 hover:bg-white"
+                onClick={() => window.location.reload()}
+                aria-label="새로고침"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+
+              {/* 전체화면 버튼 */}
+              <Button
+                variant="outline"
+                size="icon"
+                className="bg-white/80 hover:bg-white"
+                onClick={toggleFullScreen}
+                aria-label={isFullScreen ? "전체화면 종료" : "전체화면으로 보기"}
+              >
+                {isFullScreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </Card>
         </div>
       </div>
