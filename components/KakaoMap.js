@@ -1,13 +1,17 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import AddressTable from './AddressTable';
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Search } from "lucide-react"
+
 
 const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initializeMap = true, onAddressesFound }) => {
   const mapRef = useRef(null) // 지도 객체 참조
   const managerRef = useRef(null) // Drawing Manager 참조
   const markerRef = useRef(null) // 마커 객체 참조
   const infowindowRef = useRef(null) // 정보창 객체 참조
+  const [searchKeyword, setSearchKeyword] = useState("")
 
   const [polygonCreated, setPolygonCreated] = useState(false) // 폴리곤 생성 여부
   const [activeButton, setActiveButton] = useState(null) // 활성화된 버튼 상태
@@ -21,7 +25,7 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
         const container = document.getElementById("map")
         const options = {
           center: new window.kakao.maps.LatLng(36.8396345, 127.142699), // 초기 중심 좌표
-          level: 3,
+          level: 2,
         }
 
         // 지도 객체 초기화
@@ -84,20 +88,76 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                   ? "<div>도로명주소: " + result[0].road_address.address_name + "</div>"
                   : ""
                 const content = `
-                  <div class="bAddr">
-                    <span class="title"><a href="/addressInfor?jibun=${result[0].address.address_name}">주소정보</a></span>
-                    ${detailAddr}
-                    <div>지번 주소: ${result[0].address.address_name}</div>
-                    <button class="close-btn" id="close-btn" style="
-                      background-color: #f44336;
-                      color: white;
-                      border: none;
-                      padding: 5px 10px;
-                      border-radius: 4px;
-                      cursor: pointer;
-                      margin-top: 8px;
-                      font-size: 12px;
-                    ">닫기</button>
+                  <div style="
+                    padding: 15px;
+                    width: 300px;
+                    font-family: 'Pretendard', sans-serif;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                    border-radius: 8px;
+                    background: white;
+                  ">
+                    <div style="
+                      font-size: 16px;
+                      font-weight: 600;
+                      color: #1a1a1a;
+                      margin-bottom: 12px;
+                      padding-bottom: 8px;
+                      border-bottom: 1px solid #eee;
+                    ">
+                      <a
+                        style="
+                          color: #2563eb;
+                          text-decoration: none;
+                          display: block;
+                        "
+                        onmouseover="this.style.color='#1d4ed8'"
+                        onmouseout="this.style.color='#2563eb'"
+                      >
+                        주소 정보 보기
+                      </a>
+                    </div>
+                    <div style="
+                      font-size: 14px;
+                      line-height: 1.5;
+                      color: #4b5563;
+                      margin-bottom: 8px;
+                    ">
+                      ${detailAddr ? `
+                        <div style="margin-bottom: 4px;">
+                          <span style="color: #6b7280; margin-right: 4px;">도로명</span>
+                          ${result[0].road_address.address_name}
+                        </div>
+                      ` : ''}
+                      <div>
+                        <span style="color: #6b7280; margin-right: 4px;">지번</span>
+                        ${result[0].address.address_name}
+                      </div>
+                    </div>
+                    <div style="
+                      display: flex;
+                      justify-content: flex-end;
+                      margin-top: 12px;
+                    ">
+                      <button 
+                        class="close-btn" 
+                        id="close-btn" 
+                        style="
+                          background-color: #e5e7eb;
+                          color: #4b5563;
+                          border: none;
+                          padding: 6px 12px;
+                          border-radius: 6px;
+                          cursor: pointer;
+                          font-size: 13px;
+                          font-weight: 500;
+                          transition: all 0.2s;
+                        "
+                        onmouseover="this.style.backgroundColor='#d1d5db'"
+                        onmouseout="this.style.backgroundColor='#e5e7eb'"
+                      >
+                        닫기
+                      </button>
+                    </div>
                   </div>
                 `
 
@@ -269,10 +329,76 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
 
                       const detailAddr = "<div>도로명주소: " + roadAddress + "</div>";
                       const content = `
-                        <div class="bAddr">
-                          <span class="title"><a href="/addressInfor?jibun=${result[0].address.address_name}">주소정보</a></span>
-                          ${detailAddr}
-                          <div>지번 주소: ${result[0].address.address_name}</div>
+                        <div style="
+                          padding: 15px;
+                          width: 300px;
+                          font-family: 'Pretendard', sans-serif;
+                          box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                          border-radius: 8px;
+                          background: white;
+                        ">
+                          <div style="
+                            font-size: 16px;
+                            font-weight: 600;
+                            color: #1a1a1a;
+                            margin-bottom: 12px;
+                            padding-bottom: 8px;
+                            border-bottom: 1px solid #eee;
+                          ">
+                            <a
+                              style="
+                                color: #2563eb;
+                                text-decoration: none;
+                                display: block;
+                              "
+                              onmouseover="this.style.color='#1d4ed8'"
+                              onmouseout="this.style.color='#2563eb'"
+                            >
+                              주소 정보 보기
+                            </a>
+                          </div>
+                          <div style="
+                            font-size: 14px;
+                            line-height: 1.5;
+                            color: #4b5563;
+                            margin-bottom: 8px;
+                          ">
+                            ${detailAddr ? `
+                              <div style="margin-bottom: 4px;">
+                                <span style="color: #6b7280; margin-right: 4px;">도로명</span>
+                                ${result[0].road_address.address_name}
+                              </div>
+                            ` : ''}
+                            <div>
+                              <span style="color: #6b7280; margin-right: 4px;">지번</span>
+                              ${result[0].address.address_name}
+                            </div>
+                          </div>
+                          <div style="
+                            display: flex;
+                            justify-content: flex-end;
+                            margin-top: 12px;
+                          ">
+                            <button 
+                              class="close-btn" 
+                              id="close-btn" 
+                              style="
+                                background-color: #e5e7eb;
+                                color: #4b5563;
+                                border: none;
+                                padding: 6px 12px;
+                                border-radius: 6px;
+                                cursor: pointer;
+                                font-size: 13px;
+                                font-weight: 500;
+                                transition: all 0.2s;
+                              "
+                              onmouseover="this.style.backgroundColor='#d1d5db'"
+                              onmouseout="this.style.backgroundColor='#e5e7eb'"
+                            >
+                              닫기
+                            </button>
+                          </div>
                         </div>
                       `;
 
@@ -285,10 +411,10 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
 
                       const addressInfo = {
                         id: newAddresses.length + 1,
-                        name: "건물",
+                        name: "주택",
                         address: roadAddress,
                         phone: "-",
-                        category: "건물",
+                        category: "주택",
                         rating: "-"
                       };
                       
@@ -320,13 +446,148 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
     }
   };
 
+  // 주소 검색 함수
+  const searchAddress = () => {
+    if (!searchKeyword.trim()) return;
+
+    const geocoder = new window.kakao.maps.services.Geocoder();
+    
+    const callback = function(result, status) {
+      if (status === window.kakao.maps.services.Status.OK) {
+        const coords = new window.kakao.maps.LatLng(result[0].y, result[0].x);
+        
+        // 지도 중심을 이동
+        mapRef.current.setCenter(coords);
+        
+        // 마커 표시
+        markerRef.current.setPosition(coords);
+        markerRef.current.setMap(mapRef.current);
+
+        // 인포윈도우에 표시할 내용
+        const detailAddr = result[0].road_address 
+          ? "<div>도로명주소: " + result[0].road_address.address_name + "</div>"
+          : "";
+
+        const content = `
+          <div style="
+            padding: 15px;
+            width: 300px;
+            font-family: 'Pretendard', sans-serif;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            background: white;
+          ">
+            <div style="
+              font-size: 16px;
+              font-weight: 600;
+              color: #1a1a1a;
+              margin-bottom: 12px;
+              padding-bottom: 8px;
+              border-bottom: 1px solid #eee;
+            ">
+              <a
+                style="
+                  color: #2563eb;
+                  text-decoration: none;
+                  display: block;
+                "
+                onmouseover="this.style.color='#1d4ed8'"
+                onmouseout="this.style.color='#2563eb'"
+              >
+                주소 정보 보기
+              </a>
+            </div>
+            <div style="
+              font-size: 14px;
+              line-height: 1.5;
+              color: #4b5563;
+              margin-bottom: 8px;
+            ">
+              ${detailAddr ? `
+                <div style="margin-bottom: 4px;">
+                  <span style="color: #6b7280; margin-right: 4px;">도로명</span>
+                  ${result[0].road_address.address_name}
+                </div>
+              ` : ''}
+              <div>
+                <span style="color: #6b7280; margin-right: 4px;">지번</span>
+                ${result[0].address.address_name}
+              </div>
+            </div>
+            <div style="
+              display: flex;
+              justify-content: flex-end;
+              margin-top: 12px;
+            ">
+              <button 
+                class="close-btn" 
+                id="close-btn" 
+                style="
+                  background-color: #e5e7eb;
+                  color: #4b5563;
+                  border: none;
+                  padding: 6px 12px;
+                  border-radius: 6px;
+                  cursor: pointer;
+                  font-size: 13px;
+                  font-weight: 500;
+                  transition: all 0.2s;
+                "
+                onmouseover="this.style.backgroundColor='#d1d5db'"
+                onmouseout="this.style.backgroundColor='#e5e7eb'"
+              >
+                닫기
+              </button>
+            </div>
+          </div>
+        `;
+
+        // 인포윈도우 표시
+        infowindowRef.current.setContent(content);
+        infowindowRef.current.open(mapRef.current, markerRef.current);
+
+        // 닫기 버튼 이벤트 추가
+        addCloseButtonListener();
+      }
+    };
+
+    geocoder.addressSearch(searchKeyword, callback);
+  };
+
+  // 엔터 키 처리
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      searchAddress();
+    }
+  };
+
   return (
     <div style={{ width: "100%", height: "100%", position: "relative" }}>
+      {/* 검색 입력창 */}
+      <div className="absolute top-4 left-4 z-20 flex gap-2">
+        <Input
+          type="text"
+          placeholder="주소를 입력하세요"
+          value={searchKeyword}
+          onChange={(e) => setSearchKeyword(e.target.value)}
+          onKeyPress={handleKeyPress}
+          className="w-64 bg-white"
+        />
+        <Button
+          variant="default"
+          size="icon"
+          onClick={searchAddress}
+          className="bg-white text-gray-700 hover:bg-gray-100"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+      </div>
+
       <div className="flex h-full">
-        <div className="w-3/4 h-full">
+        <div className="w-full h-full">
           <div id="map" style={{ width: "100%", height: "100%", backgroundColor: "#f3f4f6" }}></div>
           {enableDrawingTools && (
-            <div className="absolute top-4 left-4 z-10 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
+            <div className="absolute top-2 right-[100px] z-10 flex flex-col space-y-2 sm:flex-row sm:space-y-0 sm:space-x-2">
               <button
                 onClick={() => selectOverlay("POLYGON")}
                 className={`px-4 py-2 rounded-md shadow-md transition-all duration-200 flex items-center justify-center ${
@@ -336,7 +597,7 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3z" />
                 </svg>
-                다각형
+                POLYGON
               </button>
             </div>
           )}
@@ -349,7 +610,7 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
-                취소
+                닫기
               </button>
               <button
                 onClick={saveCoords}
@@ -362,13 +623,10 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                     clipRule="evenodd"
                   />
                 </svg>
-                좌표 저장하기
+                주소 가져오기
               </button>
             </div>
           )}
-        </div>
-        <div className="w-1/4 h-full">
-          <AddressTable addresses={addresses} />
         </div>
       </div>
     </div>
