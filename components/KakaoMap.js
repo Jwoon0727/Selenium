@@ -247,6 +247,149 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
     setActiveButton(null); // POLYGON 버튼 상태 초기화
   };
 
+  // 격자점 처리를 청크 단위로 나누어 실행하는 함수
+  const processInChunks = async (points, chunkSize = 4) => {
+    const newMarkers = [];
+    const newInfoWindows = [];
+    const newAddresses = [...addresses];
+    const addressSet = new Set();
+
+    // 포인트 배열을 청크로 나누기
+    for (let i = 0; i < points.length; i += chunkSize) {
+      const chunk = points.slice(i, i + chunkSize);
+      
+      // 각 청크의 프로미스를 동시에 처리
+      const chunkPromises = chunk.map(point => {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            searchDetailAddrFromCoords(point, (result, status) => {
+              if (status === window.kakao.maps.services.Status.OK && result[0].road_address) {
+                const roadAddress = result[0].road_address.address_name;
+                
+                if (!addressSet.has(roadAddress)) {
+                  addressSet.add(roadAddress);
+                  
+                  const marker = new window.kakao.maps.Marker({
+                    position: point,
+                    map: mapRef.current
+                  });
+                  newMarkers.push(marker);
+
+                  // 인포윈도우 생성 로직...
+                  if (result[0].road_address) {
+                    const detailAddr = "<div>도로명주소: " + roadAddress + "</div>";
+                    const content = `
+                      <div style="
+                        padding: 15px;
+                        width: 300px;
+                        font-family: 'Pretendard', sans-serif;
+                        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                        border-radius: 8px;
+                        background: white;
+                      ">
+                        <div style="
+                          font-size: 16px;
+                          font-weight: 600;
+                          color: #1a1a1a;
+                          margin-bottom: 12px;
+                          padding-bottom: 8px;
+                          border-bottom: 1px solid #eee;
+                        ">
+                          <a
+                            style="
+                              color: #2563eb;
+                              text-decoration: none;
+                              display: block;
+                            "
+                            onmouseover="this.style.color='#1d4ed8'"
+                            onmouseout="this.style.color='#2563eb'"
+                          >
+                            주소 정보 보기
+                          </a>
+                        </div>
+                        <div style="
+                          font-size: 14px;
+                          line-height: 1.5;
+                          color: #4b5563;
+                          margin-bottom: 8px;
+                        ">
+                          ${detailAddr ? `
+                            <div style="margin-bottom: 4px;">
+                              <span style="color: #6b7280; margin-right: 4px;">도로명</span>
+                              ${result[0].road_address.address_name}
+                            </div>
+                          ` : ''}
+                          <div>
+                            <span style="color: #6b7280; margin-right: 4px;">지번</span>
+                            ${result[0].address.address_name}
+                          </div>
+                        </div>
+                        <div style="
+                          display: flex;
+                          justify-content: flex-end;
+                          margin-top: 12px;
+                        ">
+                          <button 
+                            class="close-btn" 
+                            id="close-btn" 
+                            style="
+                              background-color: #e5e7eb;
+                              color: #4b5563;
+                              border: none;
+                              padding: 6px 12px;
+                              border-radius: 6px;
+                              cursor: pointer;
+                              font-size: 13px;
+                              font-weight: 500;
+                              transition: all 0.2s;
+                            "
+                            onmouseover="this.style.backgroundColor='#d1d5db'"
+                            onmouseout="this.style.backgroundColor='#e5e7eb'"
+                          >
+                            닫기
+                          </button>
+                        </div>
+                      </div>
+                    `;
+
+                    const infowindow = new window.kakao.maps.InfoWindow({
+                      content: content,
+                      zIndex: 1
+                    });
+                    newInfoWindows.push(infowindow);
+                    infowindow.open(mapRef.current, marker);
+                  }
+
+                  const addressInfo = {
+                    id: newAddresses.length + 1,
+                    name: "주택",
+                    address: roadAddress,
+                    phone: "-",
+                    category: "주택",
+                    rating: "-"
+                  };
+                  
+                  if (!newAddresses.some(addr => addr.address === roadAddress)) {
+                    newAddresses.push(addressInfo);
+                  }
+                }
+              }
+              resolve();
+            });
+          }, 100); // 각 요청 사이에 약간의 지연 추가
+        });
+      });
+
+      // 각 청크의 모든 프로미스가 완료될 때까지 대기
+      await Promise.all(chunkPromises);
+      
+      // 청크 처리 사이에 잠시 대기
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+
+    return { newMarkers, newInfoWindows, newAddresses };
+  };
+
   // 좌표 저장 함수
   const saveCoords = async () => {
     try {
@@ -297,153 +440,26 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
           return inside;
         };
 
-        // 중복 주소를 체크하기 위한 Set
-        const addressSet = new Set();
-        const newAddresses = [...addresses]; // 기존 주소 복사
-        
-        // 격자점에 대해 주소 정보 가져오기
-        const newMarkers = [];
-        const newInfoWindows = [];
-        
-        // 모든 격자점에 대한 주소 검색을 Promise로 처리
-        const searchPromises = [];
-        
+        // 모든 포인트 배열 생성
+        const points = [];
         for (let lat = minLat; lat <= maxLat; lat += lat_interval) {
           for (let lng = minLng; lng <= maxLng; lng += lng_interval) {
             const point = new window.kakao.maps.LatLng(lat, lng);
-            
             if (polygonPath.length >= 3 && isPointInPolygon(point, polygonPath)) {
-              // Promise로 주소 검색 처리
-              const searchPromise = new Promise((resolve) => {
-                searchDetailAddrFromCoords(point, (result, status) => {
-                  if (status === window.kakao.maps.services.Status.OK && result[0].road_address) {
-                    const roadAddress = result[0].road_address.address_name;
-                    
-                    if (!addressSet.has(roadAddress)) {
-                      addressSet.add(roadAddress);
-                      
-                      const marker = new window.kakao.maps.Marker({
-                        position: point,
-                        map: mapRef.current
-                      });
-                      newMarkers.push(marker);
-
-                      // 도로명 주소가 있는 경우에만 인포윈도우 생성 및 표시
-                      if (result[0].road_address) {
-                        const detailAddr = "<div>도로명주소: " + roadAddress + "</div>";
-                        const content = `
-                          <div style="
-                            padding: 15px;
-                            width: 300px;
-                            font-family: 'Pretendard', sans-serif;
-                            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-                            border-radius: 8px;
-                            background: white;
-                          ">
-                            <div style="
-                              font-size: 16px;
-                              font-weight: 600;
-                              color: #1a1a1a;
-                              margin-bottom: 12px;
-                              padding-bottom: 8px;
-                              border-bottom: 1px solid #eee;
-                            ">
-                              <a
-                                style="
-                                  color: #2563eb;
-                                  text-decoration: none;
-                                  display: block;
-                                "
-                                onmouseover="this.style.color='#1d4ed8'"
-                                onmouseout="this.style.color='#2563eb'"
-                              >
-                                주소 정보 보기
-                              </a>
-                            </div>
-                            <div style="
-                              font-size: 14px;
-                              line-height: 1.5;
-                              color: #4b5563;
-                              margin-bottom: 8px;
-                            ">
-                              ${detailAddr ? `
-                                <div style="margin-bottom: 4px;">
-                                  <span style="color: #6b7280; margin-right: 4px;">도로명</span>
-                                  ${result[0].road_address.address_name}
-                                </div>
-                              ` : ''}
-                              <div>
-                                <span style="color: #6b7280; margin-right: 4px;">지번</span>
-                                ${result[0].address.address_name}
-                              </div>
-                            </div>
-                            <div style="
-                              display: flex;
-                              justify-content: flex-end;
-                              margin-top: 12px;
-                            ">
-                              <button 
-                                class="close-btn" 
-                                id="close-btn" 
-                                style="
-                                  background-color: #e5e7eb;
-                                  color: #4b5563;
-                                  border: none;
-                                  padding: 6px 12px;
-                                  border-radius: 6px;
-                                  cursor: pointer;
-                                  font-size: 13px;
-                                  font-weight: 500;
-                                  transition: all 0.2s;
-                                "
-                                onmouseover="this.style.backgroundColor='#d1d5db'"
-                                onmouseout="this.style.backgroundColor='#e5e7eb'"
-                              >
-                                닫기
-                              </button>
-                            </div>
-                          </div>
-                        `;
-
-                        const infowindow = new window.kakao.maps.InfoWindow({
-                          content: content,
-                          zIndex: 1
-                        });
-                        newInfoWindows.push(infowindow);
-                        infowindow.open(mapRef.current, marker);
-                      }
-
-                      const addressInfo = {
-                        id: newAddresses.length + 1,
-                        name: "주택",
-                        address: roadAddress,
-                        phone: "-",
-                        category: "주택",
-                        rating: "-"
-                      };
-                      
-                      if (!newAddresses.some(addr => addr.address === roadAddress)) {
-                        newAddresses.push(addressInfo);
-                      }
-                    }
-                  }
-                  resolve();
-                });
-              });
-              searchPromises.push(searchPromise);
+              points.push(point);
             }
           }
         }
-        
-        // 모든 주소 검색이 완료될 때까지 대기
-        await Promise.all(searchPromises);
-        
+
+        // 청크 단위로 처리
+        const { newMarkers, newInfoWindows, newAddresses } = await processInChunks(points);
+
         // 주소 목록을 가나다순으로 정렬
         const sortedAddresses = newAddresses.sort((a, b) => 
           a.address.localeCompare(b.address, 'ko')
         );
 
-        // 상태 업데이트는 정렬된 주소 목록을 사용
+        // 상태 업데이트
         setMarkers(newMarkers);
         setInfoWindows(newInfoWindows);
         setAddresses(sortedAddresses);
