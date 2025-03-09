@@ -18,6 +18,8 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
   const [markers, setMarkers] = useState([]); // 생성된 마커들을 저장할 상태
   const [infoWindows, setInfoWindows] = useState([]); // 생성된 인포윈도우들을 저장할 상태
   const [addresses, setAddresses] = useState([]); // 도로명 주소 목록을 저장할 상태
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const createMap = async () => {
@@ -248,18 +250,21 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
   };
 
   // 격자점 처리를 청크 단위로 나누어 실행하는 함수
-  const processInChunks = async (points, chunkSize = 4) => {
+  const processInChunks = async (points, chunkSize = 4, onProgress) => {
     const newMarkers = [];
     const newInfoWindows = [];
     const newAddresses = [...addresses];
     const addressSet = new Set();
+
+    const totalPoints = points.length;
+    let processedPoints = 0;
 
     // 포인트 배열을 청크로 나누기
     for (let i = 0; i < points.length; i += chunkSize) {
       const chunk = points.slice(i, i + chunkSize);
       
       // 각 청크의 프로미스를 동시에 처리
-      const chunkPromises = chunk.map(point => {
+      await Promise.all(chunk.map(point => {
         return new Promise((resolve) => {
           setTimeout(() => {
             searchDetailAddrFromCoords(point, (result, status) => {
@@ -374,16 +379,15 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                   }
                 }
               }
+              processedPoints += 1;
+              const progress = Math.round((processedPoints / totalPoints) * 100);
+              onProgress(progress);
               resolve();
             });
-          }, 100); // 각 요청 사이에 약간의 지연 추가
+          }, 100);
         });
-      });
+      }));
 
-      // 각 청크의 모든 프로미스가 완료될 때까지 대기
-      await Promise.all(chunkPromises);
-      
-      // 청크 처리 사이에 잠시 대기
       await new Promise(resolve => setTimeout(resolve, 300));
     }
 
@@ -393,6 +397,9 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
   // 좌표 저장 함수
   const saveCoords = async () => {
     try {
+      setIsLoading(true);
+      setProgress(0);
+      
       // 현재 그려진 폴리곤 가져오기
       const manager = managerRef.current;
       const data = manager.getData();
@@ -452,7 +459,9 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
         }
 
         // 청크 단위로 처리
-        const { newMarkers, newInfoWindows, newAddresses } = await processInChunks(points);
+        const { newMarkers, newInfoWindows, newAddresses } = await processInChunks(points, 4, (currentProgress) => {
+          setProgress(currentProgress);
+        });
 
         // 주소 목록을 가나다순으로 정렬
         const sortedAddresses = newAddresses.sort((a, b) => 
@@ -468,6 +477,9 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
     } catch (error) {
       console.error("처리 중 오류 발생:", error);
       alert("좌표 처리 중 오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+      setProgress(0);
     }
   };
 
@@ -651,6 +663,31 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
                 주소 가져오기
               </button>
             </div>
+          )}
+
+          {/* 로딩 오버레이 및 로딩 바 */}
+          {isLoading && (
+            <>
+              {/* 전체 화면 오버레이 */}
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 z-[99]"
+                style={{ pointerEvents: "all" }}
+              />
+              
+              {/* 로딩 바 */}
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg shadow-lg z-[100] w-80">
+                <div className="text-center mb-4">
+                  <p className="text-gray-700 mb-2">주소 정보를 가져오는 중...</p>
+                  <p className="text-blue-600 font-semibold">{progress}%</p>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                  <div
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
