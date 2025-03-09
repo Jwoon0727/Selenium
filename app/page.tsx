@@ -32,8 +32,8 @@ export default function LoginPage() {
       return
     }
 
-    // PIN 번호가 0727인지 확인
-    if (pin !== "0727") {
+    // PIN 번호가 1914인지 확인
+    if (pin !== "1914") {
       setError("잘못된 PIN 번호입니다")
       return
     }
