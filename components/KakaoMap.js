@@ -388,7 +388,7 @@ const KakaoMap = ({ enableDrawingTools = false, enableInfoWindow = true, initial
         });
       }));
 
-      await new Promise(resolve => setTimeout(resolve, 300));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     return { newMarkers, newInfoWindows, newAddresses };
