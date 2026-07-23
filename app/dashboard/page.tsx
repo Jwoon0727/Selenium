@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Maximize2, Minimize2, RefreshCw, Share2, Download } from "lucide-react"
+import { Maximize2, Minimize2, RefreshCw, Share2, Download, Building2 } from "lucide-react"
 
 import {
   Dialog,
@@ -205,6 +206,16 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">SELENIUM</h1>
         <div className="flex gap-2">
+          <Button
+            variant="outline"
+            asChild
+            className="flex items-center gap-2"
+          >
+            <Link href="/apart">
+              <Building2 className="h-4 w-4" />
+              아파트 입력
+            </Link>
+          </Button>
           <Button
             variant="outline"
             onClick={() => setIsHistoryDialogOpen(true)}

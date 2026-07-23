@@ -1,0 +1,181 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1784774144172,
+  "projectRoot": "/Users/jwoonsm5/Desktop/MacM5Dev/seleUp/up",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "15.5.20",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.0.0",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.0.0",
+        "category": "frontend"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev --port 3100",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "components",
+      "lib",
+      "public"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 3,
+      "lastAccessed": 1784774144157,
+      "keyFiles": [
+        "globals.css",
+        "layout.tsx",
+        "page.tsx"
+      ]
+    },
+    "components": {
+      "path": "components",
+      "purpose": "UI components",
+      "fileCount": 4,
+      "lastAccessed": 1784774144157,
+      "keyFiles": [
+        "AddressTable.tsx",
+        "KakaoMap.js",
+        "footer.tsx",
+        "theme-provider.tsx"
+      ]
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 1,
+      "lastAccessed": 1784774144161,
+      "keyFiles": [
+        "utils.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 8,
+      "lastAccessed": 1784774144162,
+      "keyFiles": [
+        "file.svg",
+        "globe.svg",
+        "manifest.json",
+        "next.svg",
+        "sw.js"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "plan.md",
+      "accessCount": 10,
+      "lastAccessed": 1784775703335,
+      "type": "file"
+    },
+    {
+      "path": "lib/apartExcel.ts",
+      "accessCount": 4,
+      "lastAccessed": 1784777486722,
+      "type": "file"
+    },
+    {
+      "path": "app/apart/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1784776946563,
+      "type": "file"
+    },
+    {
+      "path": "app/dashboard/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784774447019,
+      "type": "file"
+    },
+    {
+      "path": "components/AddressTable.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784774447405,
+      "type": "file"
+    },
+    {
+      "path": "app/layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784776197527,
+      "type": "file"
+    },
+    {
+      "path": "components/apart/DongInputForm.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784776650033,
+      "type": "file"
+    },
+    {
+      "path": "lib/apartStorage.ts",
+      "accessCount": 1,
+      "lastAccessed": 1784776932260,
+      "type": "file"
+    },
+    {
+      "path": "components/apart/DongEntryStack.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1784776946431,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
