@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1784774144172,
+  "lastScanned": 1784956535245,
   "projectRoot": "/Users/jwoonsm5/Desktop/MacM5Dev/seleUp/up",
   "techStack": {
     "languages": [
@@ -79,7 +79,7 @@
       "path": "app",
       "purpose": "Application code",
       "fileCount": 3,
-      "lastAccessed": 1784774144157,
+      "lastAccessed": 1784956535222,
       "keyFiles": [
         "globals.css",
         "layout.tsx",
@@ -90,7 +90,7 @@
       "path": "components",
       "purpose": "UI components",
       "fileCount": 4,
-      "lastAccessed": 1784774144157,
+      "lastAccessed": 1784956535236,
       "keyFiles": [
         "AddressTable.tsx",
         "KakaoMap.js",
@@ -101,9 +101,11 @@
     "lib": {
       "path": "lib",
       "purpose": "Library code",
-      "fileCount": 1,
-      "lastAccessed": 1784774144161,
+      "fileCount": 3,
+      "lastAccessed": 1784956535236,
       "keyFiles": [
+        "apartExcel.ts",
+        "apartStorage.ts",
         "utils.ts"
       ]
     },
@@ -111,7 +113,7 @@
       "path": "public",
       "purpose": "Public files",
       "fileCount": 8,
-      "lastAccessed": 1784774144162,
+      "lastAccessed": 1784956535237,
       "keyFiles": [
         "file.svg",
         "globe.svg",
@@ -130,14 +132,14 @@
     },
     {
       "path": "lib/apartExcel.ts",
-      "accessCount": 4,
-      "lastAccessed": 1784777486722,
+      "accessCount": 7,
+      "lastAccessed": 1784957239307,
       "type": "file"
     },
     {
       "path": "app/apart/page.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1784776946563,
+      "accessCount": 3,
+      "lastAccessed": 1784956692079,
       "type": "file"
     },
     {

@@ -1,6 +1,6 @@
 import type { DongEntry } from "@/lib/apartStorage"
 
-const EXCEL_HEADER = ['도로명', '번지', '건물명', '새부주소', '금지', '메모'] as const
+const EXCEL_HEADER = ['도로명', '번지', '건물명', '세부주소', '금지', '메모'] as const
 
 const EXCEL_COLUMN_WIDTHS = [
   { wch: 15 },
@@ -15,7 +15,7 @@ export interface ApartExcelRow {
   '도로명': string
   '번지': string
   '건물명': string
-  '새부주소': string
+  '세부주소': string
   '금지': string
   '메모': string
 }
@@ -100,8 +100,27 @@ export function parseDongEntries(entries: DongEntry[]): DongParseResult {
   return { valid, errors }
 }
 
-// 호수 오름차순 정렬: 둘 다 숫자로 해석되면 숫자 비교, 아니면 문자열 비교로 대체
+// 호수 문자열을 층(floor)과 라인(line, 마지막 2자리)으로 분해.
+// 예: "101" -> { line: 1, floor: 1 }, "1502" -> { line: 2, floor: 15 }, "2101" -> { line: 1, floor: 21 }
+function splitUnit(unit: string): { line: number; floor: number } | null {
+  const trimmed = unit.trim()
+  if (!/^\d+$/.test(trimmed) || trimmed.length < 3) return null
+  const line = Number(trimmed.slice(-2))
+  const floor = Number(trimmed.slice(0, -2))
+  return { line, floor }
+}
+
+// 라인(호)별로 묶어 정렬: 먼저 라인 오름차순, 같은 라인 내에서는 층 오름차순.
+// 예: 101, 201, 301, ... (1호 라인) -> 102, 202, 302, ... (2호 라인)
+// 표준 형식이 아니면 숫자/문자열 비교로 대체.
 function compareUnits(a: string, b: string): number {
+  const pa = splitUnit(a)
+  const pb = splitUnit(b)
+  if (pa && pb) {
+    if (pa.line !== pb.line) return pa.line - pb.line
+    return pa.floor - pb.floor
+  }
+
   const numA = Number(a)
   const numB = Number(b)
   if (a.trim() !== "" && b.trim() !== "" && Number.isFinite(numA) && Number.isFinite(numB)) {
@@ -110,13 +129,30 @@ function compareUnits(a: string, b: string): number {
   return a.localeCompare(b)
 }
 
+// 호수 목록에서 라인(호) 범위를 텍스트로 만든다.
+// 예: 1·2호 라인 -> "1-2라인", 1·2·3호 라인 -> "1-3라인", 1호 라인만 -> "1라인"
+export function buildLineLabel(units: string[]): string {
+  const lines = units
+    .map((unit) => splitUnit(unit)?.line)
+    .filter((line): line is number => line !== undefined && line !== null)
+
+  if (lines.length === 0) return ""
+
+  const min = Math.min(...lines)
+  const max = Math.max(...lines)
+  return min === max ? `${min}라인` : `${min}-${max}라인`
+}
+
 // 각 동의 첫 번째 호수 행에만 도로명·번지·건물명을 표시하고, 같은 동의 나머지 행은 공란으로 둔다.
 export function buildApartExcelRows(meta: ApartMeta, dongEntries: ParsedDongEntry[]): ApartExcelRow[] {
   const rows: ApartExcelRow[] = []
 
   for (const entry of dongEntries) {
     const dong = normalizeDongName(entry.dongName)
-    const buildingName = `${meta.apartName} ${dong}`.trim()
+    const lineLabel = buildLineLabel(entry.units)
+    const buildingName = [`${meta.apartName} ${dong}`.trim(), lineLabel]
+      .filter(Boolean)
+      .join(" ")
     const sortedUnits = [...entry.units].sort(compareUnits)
 
     sortedUnits.forEach((unit, unitIndex) => {
@@ -124,7 +160,7 @@ export function buildApartExcelRows(meta: ApartMeta, dongEntries: ParsedDongEntr
         '도로명': unitIndex === 0 ? meta.roadName : '',
         '번지': unitIndex === 0 ? meta.lotNumber : '',
         '건물명': unitIndex === 0 ? buildingName : '',
-        '새부주소': unit,
+        '세부주소': unit,
         '금지': '',
         '메모': '',
       })

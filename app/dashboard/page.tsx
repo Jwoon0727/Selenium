@@ -145,14 +145,14 @@ export default function DashboardPage() {
           '도로명': roadName,
           '번지': buildingNumber,
           '건물명': addr.name,
-          '새부주소': addr.address,
+          '세부주소': addr.address,
           '금지': addr.forbidden || '',
           '메모': addr.memo || ''
         };
       });
 
       const worksheet = XLSX.utils.json_to_sheet(formattedData, {
-        header: ['도로명', '번지', '건물명', '새부주소', '금지', '메모']
+        header: ['도로명', '번지', '건물명', '세부주소', '금지', '메모']
       });
 
       const columnWidths = [

@@ -39,7 +39,7 @@ const AddressTable = ({ addresses, onAddressesUpdate }: AddressTableProps) => {
       if (i === index) {
         const updatedAddr = { ...addr };
         
-        // 도로명이나 번지가 변경된 경우 새부주소도 함께 업데이트
+        // 도로명이나 번지가 변경된 경우 세부주소도 함께 업데이트
         if (field === 'roadName' || field === 'buildingNumber') {
           const parts = addr.address.split(' ');
           const newParts = [...parts];
@@ -87,7 +87,7 @@ const AddressTable = ({ addresses, onAddressesUpdate }: AddressTableProps) => {
               <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">도로명</th>
               <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">번지</th>
               <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">건물명</th>
-              <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">새부주소</th>
+              <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">세부주소</th>
               <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">금지</th>
               <th className="px-4 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">메모</th>
             </tr>
@@ -130,7 +130,7 @@ const AddressTable = ({ addresses, onAddressesUpdate }: AddressTableProps) => {
                       value={address.address}
                       onChange={(e) => handleInputChange(index, 'address', e.target.value)}
                       className="w-full px-2 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      placeholder="새부주소 입력"
+                      placeholder="세부주소 입력"
                     />
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
